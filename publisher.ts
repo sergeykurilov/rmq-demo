@@ -6,17 +6,24 @@ const run = async () => {
         const channel = await connection.createChannel();
         await channel.assertExchange('test', 'topic', {durable: true});
 
-        const queue = await channel.assertQueue('my-cool-queue', {durable: true});
+        const replyQueue = await channel.assertQueue('', {exclusive: true});
 
-        channel.bindQueue('my-cool-queue', 'test', 'my.commands');
+        channel.consume(replyQueue.queue, (message) => {
+            console.log(message?.content.toString());
+            console.log(message?.properties.correlationId);
+        })
 
-        channel.publish('test', 'my.commands', Buffer.from('Работает!'));
+        channel.publish('test', 'my.commands', Buffer.from('Работает!'), {
+            replyTo: replyQueue.queue,
+            correlationId: '1'
+        });
         
+
 
 
     } catch (error) {
         console.error(error);   
-    };
+    }
 }
 
 

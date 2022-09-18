@@ -15,7 +15,12 @@ const run = async () => {
             }
 
             console.log(message.content.toString());
-            channel.ack(message)
+            if(message?.properties.replyTo) {
+                console.log(message?.properties.replyTo)
+                channel.sendToQueue(message.properties.replyTo, Buffer.from('Ответ'), {
+                    correlationId: message.properties.correlationId
+                })
+            }
         }, {
             noAck: true
         })
@@ -23,7 +28,7 @@ const run = async () => {
 
     } catch (error) {
         console.error(error);   
-    };
+    }
 }
 
 
